@@ -6,6 +6,8 @@ Conversion tools for PMD on the PC-98.
 - WAV2PC8
 
 Converts any 16-bits signed little endian MONO WAV file to ADPCM 4-bits PC8/SPB OPNA file.
+There is also a -s command line switch to add 0.2s of silence as otherwise garbage will play at the end of the file.
+(This is actually recommended in the PMD manual)
 
 - PC8toPPC.py
 

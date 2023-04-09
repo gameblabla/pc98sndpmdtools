@@ -146,7 +146,7 @@ struct wavhdr_t {
     int32_t datasize;
 };
 
-int wav2adpcm(const char *infile, const char *outfile, uint8_t add_silence) {
+int wav2adpcm(const char *infile, const char *outfile) {
     struct wavhdr_t wavhdr;
     FILE *in, *out;
     size_t pcmsize, adpcmsize;
@@ -181,25 +181,16 @@ int wav2adpcm(const char *infile, const char *outfile, uint8_t add_silence) {
     pcmsize = wavhdr.datasize;
 
     adpcmsize = pcmsize / 4;
+    adpcmsize = (adpcmsize + 31) & ~31;
     pcmbuf = malloc(pcmsize);
     adpcmbuf = malloc(adpcmsize);
+    memset(adpcmbuf, 0, adpcmsize);
 
     if(fread(pcmbuf, pcmsize, 1, in) != 1) {
         fprintf(stderr, "Cannot read data.\n");
         fclose(in);
         return -1;
     }
-    
-    if (add_silence) {
-        int silence_samples = wavhdr.freq * 0.2;  // 0.2 seconds of silence
-        int silence_bytes = silence_samples * wavhdr.channels * (wavhdr.bits / 8);
-        short *silence_buf = calloc(silence_samples * wavhdr.channels, sizeof(short));
-        pcmbuf = realloc(pcmbuf, pcmsize + silence_bytes);
-        memcpy(pcmbuf + pcmsize / sizeof(short), silence_buf, silence_bytes);
-        pcmsize += silence_bytes;
-        free(silence_buf);
-    }
-    
     fclose(in);
 
     if(wavhdr.channels == 1) {
@@ -232,18 +223,14 @@ int wav2adpcm(const char *infile, const char *outfile, uint8_t add_silence) {
 
 void usage() {
     printf("wav2pc8: 16bit mono wav to aica adpcm  (c)2002 BERO, GAMEBLABLA\n"
-           " wav2pc8 -t <infile.wav> <outfile.pc8> [-s]  (To adpcm, optional -s for 0.2s silence at the end)\n"
+           " wav2pc8 -t <infile.wav> <outfile.pc8>   (To adpcm)\n"
           );
 }
 
 int main(int argc, char **argv) {
-    uint8_t add_silence = 0;
-    if(argc >= 4) {
+    if(argc == 4) {
         if(!strcmp(argv[1], "-t")) {
-            if (argc == 5 && !strcmp(argv[4], "-s")) {
-                add_silence = 1;
-            }
-            return wav2adpcm(argv[2], argv[3], add_silence);
+            return wav2adpcm(argv[2], argv[3]);
         }
         else {
             usage();
@@ -255,4 +242,3 @@ int main(int argc, char **argv) {
         return -1;
     }
 }
-

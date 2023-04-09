@@ -13,7 +13,6 @@ This also adds padding if the file is not 32 bytes aligned to avoid issues with 
 PPC Packer for PC8 files. 
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this if you use PMDB2/PMDPPZ.
-Mostly untested (but should conform to what the converters output)
 
 - PC8toP86
 

@@ -17,7 +17,7 @@ Mostly untested (but should conform to what the converters output)
 
 - PC8toP86
 
-P86 Packer for P86 files.
+P86 Packer for PC8 files.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this for PMD86.COM
 

@@ -146,7 +146,7 @@ struct wavhdr_t {
     int32_t datasize;
 };
 
-int wav2adpcm(const char *infile, const char *outfile) {
+int wav2adpcm(const char *infile, const char *outfile, uint8_t add_silence) {
     struct wavhdr_t wavhdr;
     FILE *in, *out;
     size_t pcmsize, adpcmsize;
@@ -189,6 +189,17 @@ int wav2adpcm(const char *infile, const char *outfile) {
         fclose(in);
         return -1;
     }
+    
+    if (add_silence) {
+        int silence_samples = wavhdr.freq * 0.2;  // 0.2 seconds of silence
+        int silence_bytes = silence_samples * wavhdr.channels * (wavhdr.bits / 8);
+        short *silence_buf = calloc(silence_samples * wavhdr.channels, sizeof(short));
+        pcmbuf = realloc(pcmbuf, pcmsize + silence_bytes);
+        memcpy(pcmbuf + pcmsize / sizeof(short), silence_buf, silence_bytes);
+        pcmsize += silence_bytes;
+        free(silence_buf);
+    }
+    
     fclose(in);
 
     if(wavhdr.channels == 1) {
@@ -221,14 +232,18 @@ int wav2adpcm(const char *infile, const char *outfile) {
 
 void usage() {
     printf("wav2pc8: 16bit mono wav to aica adpcm  (c)2002 BERO, GAMEBLABLA\n"
-           " wav2pc8 -t <infile.wav> <outfile.pc8>   (To adpcm)\n"
+           " wav2pc8 -t <infile.wav> <outfile.pc8> [-s]  (To adpcm, optional -s for 0.2s silence at the end)\n"
           );
 }
 
 int main(int argc, char **argv) {
-    if(argc == 4) {
+    uint8_t add_silence = 0;
+    if(argc >= 4) {
         if(!strcmp(argv[1], "-t")) {
-            return wav2adpcm(argv[2], argv[3]);
+            if (argc == 5 && !strcmp(argv[4], "-s")) {
+                add_silence = 1;
+            }
+            return wav2adpcm(argv[2], argv[3], add_silence);
         }
         else {
             usage();
@@ -240,3 +255,4 @@ int main(int argc, char **argv) {
         return -1;
     }
 }
+

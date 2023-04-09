@@ -15,8 +15,8 @@ def create_ppc(input_files, output_file):
     # Prepare the header
     header = bytearray()
     header.extend(b"ADPCM DATA for  PMD ver.4.4-  ")  # 30 bytes
-    header.extend(b"\x9D\x00")  # Next Start Address (2 bytes)
-    header.extend(b"\x00\x00\x00\x00")  # Reserved for index 0
+    header.extend(b"\x00\x00")  # Placeholder for Next Start Address (2 bytes)
+    header.extend(b"\x00\x00\x00")  # Reserved for index 0
 
     # Generate START and STOP addresses
     start = 0x0026
@@ -25,6 +25,8 @@ def create_ppc(input_files, output_file):
         header.extend(start.to_bytes(2, 'little'))  # START (2 bytes)
         header.extend(stop.to_bytes(2, 'little'))  # STOP (2 bytes)
         start = stop + 1
+        
+    header[0x1E:0x1F] = (stop + 1).to_bytes(2, 'little')# Update Next Start Address
 
     # Fill the remaining START/STOP entries with zeros
     for _ in range(256 - len(input_files) - 1):

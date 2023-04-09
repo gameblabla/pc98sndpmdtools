@@ -192,11 +192,11 @@ void pmd_play_pcm_sound_effect(unsigned char sound_effect_index, unsigned short 
 
 int main(int argc, char* argv[]) {
     int result;
-	int load_status;
+	int load_status = -1;
 	unsigned short frequency;
 	
 	printf("TESTSND : PC-98/PMD86 \n");
-
+	printf("TESTSND.EXE INPUT.P86 M \n");
     if (check_pmd() == 0)
     {
 		printf("PMD signature found\n");
@@ -258,28 +258,39 @@ int main(int argc, char* argv[]) {
 	}
 	
 
-	printf("Now playing PCM86 sound effect\n");
+	if (load_status == 0)
+	{
+		printf("Now playing PCM86 sound effect\n");
 /*
-	These are wrong
-	#define PCM_4140KHZ 0
-	#define PCM_5510KHZ 1
-	#define PCM_8270KHZ 2
-	#define PCM_11000KHZ 3
-	#define PCM_16540KHZ 4
-	#define PCM_22050KHZ 5
-	#define PCM_33080KHZ 6
-	#define PCM_44100KHZ 7
-	* 
-	* At least for PMD86/PMDPCM86/P86DRV
-	* 16540hz	: 000
-	* 44100hz   : 101
-	* For the first 3 bits
+		These are wrong
+		#define PCM_4140KHZ 0
+		#define PCM_5510KHZ 1
+		#define PCM_8270KHZ 2
+		#define PCM_11000KHZ 3
+		#define PCM_16540KHZ 4
+		#define PCM_22050KHZ 5
+		#define PCM_33080KHZ 6
+		#define PCM_44100KHZ 7
+		* 
+		* At least for PMD86/PMDPCM86/P86DRV
+		* 16540hz	: 000
+		* 44100hz   : 101
+		* For the first 3 bits
 */
-	frequency = B16(00000010,00000000);
-	pmd_play_pcm_sound_effect(1, frequency, 0, 255);
+		frequency = B16(00000010,00000000);
+		pmd_play_pcm_sound_effect(1, frequency, 0, 255);
+	}
+	else
+	{
+		printf("Attempting to play PPC sound effect (1)\n");
+		pmd_play_pcm_sound_effect(1, 16000, 2, 255);
+	}
 	
-	printf("Play PMD\n");
-	pmd_mstart(music_data, music_len);
+	if (argc > 2)
+	{
+		printf("Play PMD\n");
+		pmd_mstart(music_data, music_len);
+	}
 	
 	printf("DONE\n");
 

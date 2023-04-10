@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS = -Wall -O2
 PREFIX ?= /usr
-TARGETS = pc8toppc pcmtop86 wav2pc8
+TARGETS = pc8toppc pcmtop86 wav2pc8 wavtop86
 
 all: $(TARGETS)
 
@@ -13,6 +13,9 @@ pcmtop86: pcmtop86.c
 
 wav2pc8: wav2pc8.c
 	$(CC) $(CFLAGS) wav2pc8.c -o wav2pc8
+	
+wavtop86: wavtop86.c
+	$(CC) $(CFLAGS) wavtop86.c -o wavtop86
 
 install:
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/bin
@@ -22,6 +25,7 @@ uninstall:
 	-rm $(DESTDIR)$(PREFIX)/bin/pc8toppc
 	-rm $(DESTDIR)$(PREFIX)/bin/pcmtop86
 	-rm $(DESTDIR)$(PREFIX)/bin/wav2pc8
-
+	-rm $(DESTDIR)$(PREFIX)/bin/wavtop86
+	
 clean:
 	rm -f $(TARGETS)

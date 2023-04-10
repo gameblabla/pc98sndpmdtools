@@ -1,6 +1,6 @@
 CC = i386-pc-msdosdjgpp-gcc
 CFLAGS = -Wall -O2
-TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe
+TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe WAVTOP86.exe
 
 all: $(TARGETS)
 
@@ -12,6 +12,9 @@ PCMTOP86.exe: pcmtop86.c
 	
 WAV2PC8.exe: wav2pc8.c
 	$(CC) $(CFLAGS) wav2pc8.c -o WAV2PC8.exe
-
+	
+WAVTOP86.exe: wavtop86.c
+	$(CC) $(CFLAGS) wavtop86.c -o WAVTOP86.exe
+	
 clean:
 	rm -f $(TARGETS)

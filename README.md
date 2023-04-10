@@ -7,6 +7,7 @@ Conversion tools for use with PMD on the NEC PC-9801/9821.
 
 Converts any 16-bits signed little endian MONO WAV file to ADPCM 4-bits PC8/SPB OPNA file.
 This also adds padding if the file is not 32 bytes aligned to avoid issues with playback.
+This should be used together with PC8toPPC.
 
 - PC8toPPC
 
@@ -14,9 +15,18 @@ PPC Packer for PC8 files.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this if you use PMDB2/PMDPPZ.
 
-- PC8toP86
+- PCMtoP86
 
-P86 Packer for PC8 files.
+P86 Packer for Raw PCM 8-bits Signed 16540hz files.
+You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
+Use this for PMD86.COM
+
+- WAV2P86
+
+P86 Packer for WAV files.
+The input WAV file must be Signed 16-bits Mono.
+Frequency must also be 16540hz however because manual says this can be (abused) for changing pitch,
+you will only get a warning for this.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this for PMD86.COM
 

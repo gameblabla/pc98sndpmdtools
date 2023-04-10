@@ -1,14 +1,14 @@
 PC-98 Music PMD conversion tools
 =================================
 
-Conversion tools for PMD on the PC-98.
+Conversion tools for use with PMD on the NEC PC-9801/9821.
 
 - WAV2PC8
 
 Converts any 16-bits signed little endian MONO WAV file to ADPCM 4-bits PC8/SPB OPNA file.
 This also adds padding if the file is not 32 bytes aligned to avoid issues with playback.
 
-- PC8toPPC.py
+- PC8toPPC
 
 PPC Packer for PC8 files. 
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
@@ -20,6 +20,7 @@ P86 Packer for PC8 files.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this for PMD86.COM
 
+There are python scripts for pc8toppc and pc8top86 if you prefer to use those as well.
 
 Samples
 =======
@@ -33,6 +34,8 @@ which you can convnert with the tools here.
 
 Usage
 =====
+
+Playback:
 
 This is only if you want to use my example program with the converted files.
 Remember that it starts from index 1 (my tools also assume this).

@@ -70,12 +70,6 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
         return 1;
     }
 
-    if (!is_little_endian()) {
-        puts("Unsupported WAV format. Big-endian 16-bit WAV not accepted");
-        fclose(file);
-        return 1;
-    }
-
     if (fmt_header.sample_rate != 16540) {
         puts("Warning: Sample rate is not exactly 16540 Hz");
     }

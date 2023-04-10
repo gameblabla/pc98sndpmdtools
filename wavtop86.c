@@ -32,11 +32,6 @@ typedef struct {
     uint16_t bits_per_sample;
 } FmtHeader;
 
-int is_little_endian() {
-    int num = 1;
-    return (*(char *)&num == 1);
-}
-
 int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
     char chunk_id[4];
     uint32_t chunk_size, i;
@@ -84,8 +79,6 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
     if (fmt_header.sample_rate != 16540) {
         puts("Warning: Sample rate is not exactly 16540 Hz");
     }
-
-
 
     while (1) {
         fread(&chunk_id, sizeof(chunk_id), 1, file);

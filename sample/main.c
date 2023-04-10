@@ -10,25 +10,6 @@
 #include <i86.h>
 #include "music.h"
 
-#define HEX__(n) 0x##n##LU
-#define B8__(x) ((x&0x0000000FLU)?1:0) \
-+((x&0x000000F0LU)?2:0) \
-+((x&0x00000F00LU)?4:0) \
-+((x&0x0000F000LU)?8:0) \
-+((x&0x000F0000LU)?16:0) \
-+((x&0x00F00000LU)?32:0) \
-+((x&0x0F000000LU)?64:0) \
-+((x&0xF0000000LU)?128:0)
-
-// User-visible Macros
-#define B8(d) ((unsigned char)B8__(HEX__(d)))
-#define B16(dmsb,dlsb) (((unsigned short)B8(dmsb)<<8) + B8(dlsb))
-#define B32(dmsb,db2,db3,dlsb) \
-(((unsigned long)B8(dmsb)<<24) \
-+ ((unsigned long)B8(db2)<<16) \
-+ ((unsigned long)B8(db3)<<8) \
-+ B8(dlsb))
-
 #define PMD_VECTOR 0x60
 #define PCM86_VECTOR 0x65
 
@@ -271,14 +252,13 @@ int main(int argc, char* argv[]) {
 		#define PCM_33080KHZ 6
 		#define PCM_44100KHZ 7
 */
-
-		frequency = 0x4100;
+		frequency = 0x2200; // 16540 hz
 		pmd_play_pcm_sound_effect(0, frequency, 0, 255);
 	}
 	else
 	{
 		printf("Attempting to play PPC sound effect\n");
-		pmd_play_pcm_sound_effect(0, 16000, 2, 255);
+		pmd_play_pcm_sound_effect(0, 2540+16000, 2, 255);
 	}
 	
 	if (argc > 2)

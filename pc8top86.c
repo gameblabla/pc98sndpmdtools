@@ -42,6 +42,9 @@ int create_p86(char *input_files[], int input_files_count, char *output_file, ui
 
         all_size += pc8_data_sizes[i]; // Add each file's size to all_size
     }
+    
+    // Fill header with Zeros
+    memset(header, 0, sizeof(header));
 
     all_size += 0x6; // Add 6 bytes for the size of the header
 
@@ -50,18 +53,13 @@ int create_p86(char *input_files[], int input_files_count, char *output_file, ui
     header[12] = p86drv_version;
     memcpy(header + 13, &all_size, 3);
 
-    memset(header + 16, 0, 6); // Set the first 6 bytes of START/SIZE to zero (index 0 is reserved)
-
     // Set START and SIZE for each input file
     start = 0x610;
     for (i = 0; i < input_files_count; i++) {
-        memcpy(header + 22 + i * 6, &start, 3);
-        memcpy(header + 25 + i * 6, &pc8_data_sizes[i], 3);
+        memcpy(header + 16 + i * 6, &start, 3);
+        memcpy(header + 19 + i * 6, &pc8_data_sizes[i], 3);
         start += pc8_data_sizes[i];
     }
-
-    // Fill the rest of the START/SIZE values with zeros
-    memset(header + 22 + input_files_count * 6, 0, (255 * 2 - input_files_count * 2) * 3);
 
     // Write the output file
     p86_file = fopen(output_file, "wb");

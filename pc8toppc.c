@@ -43,16 +43,18 @@ int create_ppc(char *input_files[], int input_files_count, char *output_file) {
         fclose(pc8_file);
     }
 
+	// Zero out header
+	memset(header, 0, sizeof(header));
+
     // Prepare the header
     memcpy(header, "ADPCM DATA for  PMD ver.4.4-  ", 30);
-    memset(header + 30, 0, sizeof(header) - 30);
 
     // Generate START and STOP addresses
     start = 0x0026;
     for (i = 0; i < input_files_count; i++) {
         stop = start + (pc8_data_sizes[i] + 0x1F) / 0x20 - 1;
-        memcpy(header + 36 + i * 4, &start, 2);
-        memcpy(header + 38 + i * 4, &stop, 2);
+        memcpy(header + 32 + i * 4, &start, 2);
+        memcpy(header + 34 + i * 4, &stop, 2);
         start = stop + 1;
     }
 

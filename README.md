@@ -20,7 +20,7 @@ P86 Packer for PC8 files.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this for PMD86.COM
 
-There are python scripts for pc8toppc and pc8top86 if you prefer to use those as well.
+There are python scripts for pc8toppc and pcmtop86 if you prefer to use those as well.
 
 Samples
 =======

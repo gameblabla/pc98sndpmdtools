@@ -262,7 +262,6 @@ int main(int argc, char* argv[]) {
 	{
 		printf("Now playing PCM86 sound effect\n");
 /*
-		These are wrong
 		#define PCM_4140KHZ 0
 		#define PCM_5510KHZ 1
 		#define PCM_8270KHZ 2
@@ -271,19 +270,15 @@ int main(int argc, char* argv[]) {
 		#define PCM_22050KHZ 5
 		#define PCM_33080KHZ 6
 		#define PCM_44100KHZ 7
-		* 
-		* At least for PMD86/PMDPCM86/P86DRV
-		* 16540hz	: 000
-		* 44100hz   : 101
-		* For the first 3 bits
 */
-		frequency = B16(00000010,00000000);
-		pmd_play_pcm_sound_effect(1, frequency, 0, 255);
+
+		frequency = 0x4100;
+		pmd_play_pcm_sound_effect(0, frequency, 0, 255);
 	}
 	else
 	{
-		printf("Attempting to play PPC sound effect (1)\n");
-		pmd_play_pcm_sound_effect(1, 16000, 2, 255);
+		printf("Attempting to play PPC sound effect\n");
+		pmd_play_pcm_sound_effect(0, 16000, 2, 255);
 	}
 	
 	if (argc > 2)

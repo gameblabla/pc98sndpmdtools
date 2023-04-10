@@ -1,5 +1,5 @@
 /*
- * pc8top86 tool for use with PMD
+ * pcmtop86 tool for use with PMD
  * COPYRIGHT : MIT
  * See COPYING for more info on license
  * 
@@ -12,35 +12,35 @@
 #include <stdint.h>
 #include <string.h>
 
-static uint8_t *pc8_data_list[256];
-static uint32_t pc8_data_sizes[256];
+static uint8_t *pcm_data_list[256];
+static uint32_t pcm_data_sizes[256];
 
 int create_p86(char *input_files[], int input_files_count, char *output_file, uint8_t p86drv_version) {
 	int i;
 	uint32_t all_size = 0x10; // Initialize all_size with 0x10
 	uint8_t header[0x610];
-	FILE *pc8_file;
+	FILE *pcm_file;
 	uint32_t start;
 	FILE *p86_file;
 	
     // Read all input files and calculate the total size
     for (i = 0; i < input_files_count; i++) 
     {
-		pc8_file = fopen(input_files[i], "rb");
-        if (!pc8_file) {
-            puts("Error opening input file\n");
+		pcm_file = fopen(input_files[i], "rb");
+        if (!pcm_file) {
+            puts("Can't open input file");
             return 1;
         }
 
-        fseek(pc8_file, 0, SEEK_END);
-        pc8_data_sizes[i] = ftell(pc8_file);
-        fseek(pc8_file, 0, SEEK_SET);
+        fseek(pcm_file, 0, SEEK_END);
+        pcm_data_sizes[i] = ftell(pcm_file);
+        fseek(pcm_file, 0, SEEK_SET);
 
-        pc8_data_list[i] = malloc(pc8_data_sizes[i]);
-        fread(pc8_data_list[i], 1, pc8_data_sizes[i], pc8_file);
-        fclose(pc8_file);
+        pcm_data_list[i] = malloc(pcm_data_sizes[i]);
+        fread(pcm_data_list[i], 1, pcm_data_sizes[i], pcm_file);
+        fclose(pcm_file);
 
-        all_size += pc8_data_sizes[i]; // Add each file's size to all_size
+        all_size += pcm_data_sizes[i]; // Add each file's size to all_size
     }
     
     // Fill header with Zeros
@@ -57,21 +57,21 @@ int create_p86(char *input_files[], int input_files_count, char *output_file, ui
     start = 0x610;
     for (i = 0; i < input_files_count; i++) {
         memcpy(header + 16 + i * 6, &start, 3);
-        memcpy(header + 19 + i * 6, &pc8_data_sizes[i], 3);
-        start += pc8_data_sizes[i];
+        memcpy(header + 19 + i * 6, &pcm_data_sizes[i], 3);
+        start += pcm_data_sizes[i];
     }
 
     // Write the output file
     p86_file = fopen(output_file, "wb");
     if (!p86_file) {
-        perror("Error opening output file");
-        exit(1);
+        puts("Error opening output file");
+        return 1;
     }
 
     fwrite(header, 1, sizeof(header), p86_file);
     for (i = 0; i < input_files_count; i++) {
-        fwrite(pc8_data_list[i], 1, pc8_data_sizes[i], p86_file);
-        free(pc8_data_list[i]);
+        fwrite(pcm_data_list[i], 1, pcm_data_sizes[i], p86_file);
+        free(pcm_data_list[i]);
     }
 
     fclose(p86_file);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	char *output_file;
 	
     if (argc < 3) {
-        puts("Usage: pc8top86 input1.pc8 [input2.pc8 ...] output.p86\n");
+        puts("Usage: pcmtop86 input1.pcm [input2.pcm ...] output.p86");
         return 1;
     }
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 	
 	if (input_files_count > 255)
 	{
-		puts("Too many input files !\n Limit is 255\n");
+		puts("Too many input files !\n Limit is 255");
 		return 1;
 	}
 

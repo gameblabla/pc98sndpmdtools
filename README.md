@@ -30,7 +30,14 @@ you will only get a warning for this.
 You can add as many as 255 of them in a single file as long as the filesize does not exceed 256kb.
 Use this for PMD86.COM
 
-There are python scripts for pc8toppc and pcmtop86 if you prefer to use those as well.
+- WAV2PPC
+
+PPC Packer for WAV files.
+Input file must be Signed 16-bits Mono.
+Frequency, unlike P86, must be 16000hz. Because of this, make sure to have a higher quality input
+that you can convert to both separately P86 and PPC if needed.
+Use this with PMDB2/PMDPPZ
+
 
 Samples
 =======

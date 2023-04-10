@@ -71,7 +71,7 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
     }
 
     if (fmt_header.sample_rate != 16540) {
-        puts("Warning: Sample rate is not exactly 16540 Hz");
+        puts("Warning: Input sample rate is not 16540 Hz");
     }
 
     while (1) {

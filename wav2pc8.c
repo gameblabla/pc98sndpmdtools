@@ -4,17 +4,10 @@
     (c) 2002 BERO <bero@geocities.co.jp>
     under GPL or notify me
 
-    aica adpcm seems same as YMZ280B adpcm
-    adpcm->pcm algorithm can found MAME/src/sound/ymz280b.c by Aaron Giles
-
-    this code is for little endian machine
-
-    Modified by Megan Potter to read/write ADPCM WAV files, and to
-    handle stereo (though the stereo is very likely KOS specific
-    since we make no effort to interleave it). Please see README.GPL
-    in the KOS docs dir for more info on the GPL license.
      
-    Slightly modified as to not output a header and pad to 32 bytes. - Gameblabla
+    modified from BERO's GPL'd wav2pc8 as to not output a header and pad to 32 bytes. 
+    Also uses https://github.com/superctr/adpcm
+    - Gameblabla
 */
 
 #include <stdio.h>
@@ -22,73 +15,53 @@
 #include <stdint.h>
 #include <string.h>
 
-static int diff_lookup[16] = {
-    1, 3, 5, 7, 9, 11, 13, 15,
-    -1, -3, -5, -7, -9, -11, -13, -15,
-};
 
-static int index_scale[16] = {
-    0x0e6, 0x0e6, 0x0e6, 0x0e6, 0x133, 0x199, 0x200, 0x266,
-    0x0e6, 0x0e6, 0x0e6, 0x0e6, 0x133, 0x199, 0x200, 0x266 /* same value for speedup */
-};
+#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
-static inline int limit(int val, int min, int max) {
-    if(val < min) return min;
-    else if(val > max) return max;
-    else return val;
+static inline int16_t ymb_step(uint8_t step, int16_t* history, int16_t* step_size)
+{
+	static const int step_table[8] = {
+		57, 57, 57, 57, 77, 102, 128, 153
+	};
+
+	int sign = step & 8;
+	int delta = step & 7;
+	int diff = ((1+(delta<<1)) * *step_size) >> 3;
+	int newval = *history;
+	int nstep = (step_table[delta] * *step_size) >> 6;
+	if (sign > 0)
+		newval -= diff;
+	else
+		newval += diff;
+	//*step_size = CLAMP(nstep, 511, 32767);
+	*step_size = CLAMP(nstep, 127, 24576);
+	*history = newval = CLAMP(newval, -32768, 32767);
+	return newval;
 }
 
-void pcm2adpcm(unsigned char *dst, const short *src, size_t length) {
-    int signal, step;
-    signal = 0;
-    step = 0x7f;
+void pcm2adpcm(uint8_t *outbuffer, int16_t *buffer,long len)
+{
+	long i;
+	int16_t step_size = 127;
+	int16_t history = 0;
+	uint8_t buf_sample = 0, nibble = 0;
+	unsigned int adpcm_sample;
 
-    /* length /= 4; */
-    length = (length + 3) / 4;
-
-    do {
-        int data, val, diff;
-
-        /* hign nibble */
-        diff = *src++ - signal;
-        diff = (diff * 8) / step;
-
-        val = abs(diff) / 2;
-
-        if(val > 7) val = 7;
-
-        if(diff < 0) val += 8;
-
-        signal += (step * diff_lookup[val]) / 8;
-        signal = limit(signal, -32768, 32767);
-
-        step = (step * index_scale[val]) >> 8;
-        step = limit(step, 0x7f, 0x6000);
-
-        data = val;
-
-        /* low nibble */
-        diff = *src++ - signal;
-        diff = (diff * 8) / step;
-
-        val = (abs(diff)) / 2;
-
-        if(val > 7) val = 7;
-
-        if(diff < 0) val += 8;
-
-        signal += (step * diff_lookup[val]) / 8;
-        signal = limit(signal, -32768, 32767);
-
-        step = (step * index_scale[val]) >> 8;
-        step = limit(step, 0x7f, 0x6000);
-
-        data |= val << 4;
-
-        *dst++ = data;
-
-    }
-    while(--length);
+	for(i=0;i<len;i++)
+	{
+		// we remove a few bits of accuracy to reduce some noise.
+		int step = ((*buffer++) & -8) - history;
+		adpcm_sample = (abs(step)<<16) / (step_size<<14);
+		adpcm_sample = CLAMP(adpcm_sample, 0, 7);
+		if(step < 0)
+			adpcm_sample |= 8;
+		if(nibble)
+			*outbuffer++ = buf_sample | (adpcm_sample&15);
+		else
+			buf_sample = (adpcm_sample&15)<<4;
+		nibble^=1;
+		ymb_step(adpcm_sample, &history, &step_size);
+	}
 }
 
 void deinterleave(void *buffer, size_t size) {
@@ -225,19 +198,13 @@ int wav2adpcm(const char *infile, const char *outfile) {
 
 void usage() {
     puts("wav2pc8: 16bit mono wav to aica adpcm  (c)2002 BERO, GAMEBLABLA\n"
-           " wav2pc8 -t <infile.wav> <outfile.pc8>   (To adpcm)\n"
+           " wav2pc8 <infile.wav> <outfile.pc8>   (To adpcm)\n"
           );
 }
 
 int main(int argc, char **argv) {
-    if(argc == 4) {
-        if(!strcmp(argv[1], "-t")) {
-            return wav2adpcm(argv[2], argv[3]);
-        }
-        else {
-            usage();
-            return -1;
-        }
+    if(argc == 3) {
+		return wav2adpcm(argv[1], argv[2]);
     }
     else {
         usage();

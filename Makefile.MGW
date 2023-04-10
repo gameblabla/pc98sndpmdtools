@@ -1,6 +1,6 @@
 CC = x86_64-w64-mingw32-gcc
 CFLAGS = -Wall -O2
-TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe WAVTOP86.exe
+TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe WAVTOP86.exe WAVTOPPC.exe
 
 all: $(TARGETS)
 
@@ -15,6 +15,9 @@ WAV2PC8.exe: wav2pc8.c
 	
 WAVTOP86.exe: wavtop86.c
 	$(CC) $(CFLAGS) wavtop86.c -o WAVTOP86.exe
+	
+WAVTOPPC.exe: wavtoppc.c
+	$(CC) $(CFLAGS) wavtoppc.c -o WAVTOPPC.exe
 
 clean:
 	rm -f $(TARGETS)

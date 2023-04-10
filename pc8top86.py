@@ -21,9 +21,6 @@ def create_p86(input_files, output_file, p86drv_version=0x11):
     header.append(p86drv_version)  # Version number 1 byte
     header.extend(all_size.to_bytes(3, 'little'))  # ALL_Size 3 bytes
 
-    # Set the first 6 bytes of START/SIZE to zero (index 0 is reserved)
-    header.extend(b'\x00\x00\x00\x00\x00\x00')  # START/SIZE (3 bytes each) 6 bytes * 1
-
     # Set START and SIZE for each input file
     start = 0x610
     for pc8_data in pc8_data_list:

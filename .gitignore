@@ -8,3 +8,7 @@
 *.PPS
 *.PC8
 *.pc8
+DOS16/
+DOS32/
+*.EXE
+*.exe

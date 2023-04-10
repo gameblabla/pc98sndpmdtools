@@ -13,6 +13,8 @@
     handle stereo (though the stereo is very likely KOS specific
     since we make no effort to interleave it). Please see README.GPL
     in the KOS docs dir for more info on the GPL license.
+     
+    Slightly modified as to not output a header and pad to 32 bytes. - Gameblabla
 */
 
 #include <stdio.h>
@@ -222,7 +224,7 @@ int wav2adpcm(const char *infile, const char *outfile) {
 
 
 void usage() {
-    printf("wav2pc8: 16bit mono wav to aica adpcm  (c)2002 BERO, GAMEBLABLA\n"
+    puts("wav2pc8: 16bit mono wav to aica adpcm  (c)2002 BERO, GAMEBLABLA\n"
            " wav2pc8 -t <infile.wav> <outfile.pc8>   (To adpcm)\n"
           );
 }

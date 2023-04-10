@@ -1,0 +1,25 @@
+CC = wcl
+MODE = c
+
+DEFINES = -0 -ox -bcl=dos -m$(MODE) -s -I. -DTARGET_MSDOS=16
+
+CFLAGS += $(DEFINES)
+
+TARGETS = PC8TOPPC.EXE PC8TOP86.EXE WAV2PC8.EXE
+
+all: ${TARGETS}
+
+PC8TOPPC.EXE: pc8toppc.c
+	${CC} ${CFLAGS} -fe=PC8TOPPC.EXE pc8toppc.c
+	rm *.o *.err
+
+PC8TOP86.EXE: pc8top86.c
+	${CC} ${CFLAGS} -fe=PC8TOP86.EXE pc8top86.c
+	rm *.o *.err
+	
+WAV2PC8.EXE: wav2pc8.c
+	${CC} ${CFLAGS} -fe=WAV2PC8.EXE wav2pc8.c
+	rm *.o *.err
+
+clean:
+	rm *.o ${TARGETS} *.err

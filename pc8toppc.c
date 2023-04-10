@@ -1,3 +1,12 @@
+/*
+ * pc8toppc tool for use with PMD
+ * COPYRIGHT : MIT
+ * See COPYING for more info on license
+ * 
+ * This is for use with PMD on the PC-98 and other supported platforms.
+ * P86 is for PMD86 and PPC is for PMDB2.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

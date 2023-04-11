@@ -12,6 +12,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#ifdef RESAMPLER
+#include <speex/speex_resampler.h>
+#endif
 
 typedef struct {
     char chunk_id[4];
@@ -77,10 +80,15 @@ void ymb_encode(int16_t *buffer,uint8_t *outbuffer, int32_t len)
 	}
 }
 
-int process_wav_file(FILE *file, uint8_t **out_data, uint32_t *out_size) {
+int process_wav_file(FILE *file, uint8_t **out_data, uint32_t *out_size, unsigned char resample) {
     WavHeader wav_header;
     size_t pcm_size;
     int16_t *pcm_data;
+    #ifdef RESAMPLER
+    uint32_t input_frames, output_frames;
+    int16_t *resampled_data;
+    int err;
+    #endif
     
     fread(&wav_header, 1, sizeof(WavHeader), file);
     
@@ -90,12 +98,37 @@ int process_wav_file(FILE *file, uint8_t **out_data, uint32_t *out_size) {
 	}
 	
     if (wav_header.sample_rate != 16000) {
-        puts("Warning: Input sample rate is not 16000 Hz");
+		#ifdef RESAMPLER
+		if (resample == 1)
+		{
+			puts("Input sample rate is not 16000 Hz, Resampling it with SpeexDSP");
+		}
+		else
+		#endif
+		{
+			puts("Warning: Input sample rate is not 16000 Hz");
+		}
     }
 
 	pcm_size = wav_header.data_chunk_size;
 	pcm_data = malloc(pcm_size);
     fread(pcm_data, 1, pcm_size, file);
+
+	#ifdef RESAMPLER
+	if (resample && wav_header.sample_rate != 16000) {
+		input_frames = pcm_size / (sizeof(int16_t) * wav_header.num_channels);
+		output_frames = (input_frames * 16000) / wav_header.sample_rate;
+		resampled_data = malloc(output_frames * sizeof(int16_t) * wav_header.num_channels);
+
+		SpeexResamplerState *resampler = speex_resampler_init(1, wav_header.sample_rate, 16000, SPEEX_RESAMPLER_QUALITY_MAX, &err);
+		speex_resampler_process_int(resampler, 0, pcm_data, &input_frames, resampled_data, &output_frames);
+		speex_resampler_destroy(resampler);
+
+		free(pcm_data);
+		pcm_data = resampled_data;
+		pcm_size = output_frames * sizeof(int16_t) * wav_header.num_channels;
+	}
+	#endif
 
     *out_size = (pcm_size + 1) / 2; // The size of the ADPCM data is half the size of the PCM data
 	*out_size = (*out_size + 31) & ~31; // Pad to 32 bytes for Yamaha chip
@@ -111,7 +144,7 @@ int process_wav_file(FILE *file, uint8_t **out_data, uint32_t *out_size) {
 static uint8_t *pcm_data_list[256];
 static uint32_t pcm_data_sizes[256];
 
-int create_ppc(char *input_files[], int input_files_count, char *output_file) {
+int create_ppc(char *input_files[], int input_files_count, char *output_file, unsigned char resample) {
 	FILE *wav_file, *ppc_file;
 	uint16_t stop, start;
 	uint8_t header[0x420];
@@ -126,7 +159,7 @@ int create_ppc(char *input_files[], int input_files_count, char *output_file) {
         }
 
         // Process the WAV file and convert it to ADPCM
-        ret = process_wav_file(wav_file, &pcm_data_list[i], &pcm_data_sizes[i]);
+        ret = process_wav_file(wav_file, &pcm_data_list[i], &pcm_data_sizes[i], resample);
         if (ret == 1) return 1;
 
         fclose(wav_file);
@@ -168,24 +201,34 @@ int create_ppc(char *input_files[], int input_files_count, char *output_file) {
 }
 
 int main(int argc, char *argv[]) {
-	int input_files_count;
-	char **input_files;
-	char *output_file;
-	
+    int input_files_count;
+    char **input_files;
+    char *output_file;
+	unsigned char resample;
+    resample = 0;
+    
     if (argc < 3) {
-        puts("Usage: wavtoppc input1.wav [input2.wav ...] output.ppc");
+        puts("Usage: wavtoppc [-r] input1.wav [input2.wav ...] output.ppc");
+        puts("  -r: Force resampling input WAV files to 16000 Hz");
         return 1;
     }
 
-	input_files_count = argc - 2;
-	input_files = argv + 1;
-	output_file = argv[argc - 1];
-    
-	if (input_files_count > 255)
-	{
-		puts("Too many input files !\n Limit is 255");
-		return 1;
-	}
+	#ifdef RESAMPLER
+    if (strcmp(argv[1], "-r") == 0) {
+        resample = 1;
+        argc--;
+        argv++;
+    }
+    #endif
 
-	return create_ppc(input_files, input_files_count, output_file);
+    input_files_count = argc - 2;
+    input_files = argv + 1;
+    output_file = argv[argc - 1];
+    
+    if (input_files_count > 255) {
+        puts("Too many input files !\n Limit is 255");
+        return 1;
+    }
+
+    return create_ppc(input_files, input_files_count, output_file, resample);
 }

@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef RESAMPLER
+#include <speex/speex_resampler.h>
+#endif
 
 static uint8_t *pcm_data_list[256];
 static uint32_t pcm_data_sizes[256];
@@ -32,13 +35,18 @@ typedef struct {
     uint16_t bits_per_sample;
 } FmtHeader;
 
-int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
+int read_wav_file(const char *filename, uint8_t **data, uint32_t *size, unsigned char resample) {
     char chunk_id[4];
     uint32_t chunk_size, i;
     RiffHeader riff_header;
     FmtHeader fmt_header;
 	FILE *file;
 	int16_t *temp_data;
+    #ifdef RESAMPLER
+    uint32_t input_frames, output_frames;
+    int16_t *resampled_data;
+    int err;
+    #endif
 	
 	file = fopen(filename, "rb");
     if (!file) {
@@ -69,10 +77,20 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
         fclose(file);
         return 1;
     }
-
-    if (fmt_header.sample_rate != 16540) {
-        puts("Warning: Input sample rate is not 16540 Hz");
-    }
+    
+    if (fmt_header.sample_rate != 16540) 
+    {
+		#ifdef RESAMPLER
+		if (resample)
+		{
+			puts("Input sample rate is not 16540 Hz, resampling it");
+		}
+		else
+		#endif
+		{
+			puts("Warning: Input sample rate is not 16540 Hz");
+		}
+	}
 
     while (1) {
         fread(&chunk_id, sizeof(chunk_id), 1, file);
@@ -84,12 +102,27 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
             fseek(file, chunk_size, SEEK_CUR);
         }
     }
-
+    
 	chunk_size = (chunk_size + 31) & ~31; // Pad to 32 bytes for Yamaha chip
 	temp_data = malloc(chunk_size);
-    memset(temp_data, 0, chunk_size);
-    
+	memset(temp_data, 0, chunk_size);
     fread(temp_data, 1, chunk_size, file);
+    
+    #ifdef RESAMPLER
+	if (resample && fmt_header.sample_rate != 16540) {
+		input_frames = chunk_size / (sizeof(int16_t) * fmt_header.num_channels);
+		output_frames = (input_frames * 16540) / fmt_header.sample_rate;
+		resampled_data = malloc(output_frames * sizeof(int16_t) * fmt_header.num_channels);
+
+		SpeexResamplerState *resampler = speex_resampler_init(1, fmt_header.sample_rate, 16540, SPEEX_RESAMPLER_QUALITY_MAX, &err);
+		speex_resampler_process_int(resampler, 0, temp_data, &input_frames, resampled_data, &output_frames);
+		speex_resampler_destroy(resampler);
+
+		free(temp_data);
+		temp_data = resampled_data;
+		chunk_size = output_frames * sizeof(int16_t) * fmt_header.num_channels;
+	}
+	#endif
 
     *size = chunk_size / 2;
     *data = malloc(*size);
@@ -103,7 +136,7 @@ int read_wav_file(const char *filename, uint8_t **data, uint32_t *size) {
     return 0;
 }
 
-int create_p86(char *input_files[], int input_files_count, char *output_file, uint8_t p86drv_version) {
+int create_p86(char *input_files[], int input_files_count, char *output_file, uint8_t p86drv_version, unsigned char resample) {
 	int i;
 	uint32_t all_size = 0x10; // Initialize all_size with 0x10
 	uint8_t header[0x610];
@@ -113,7 +146,7 @@ int create_p86(char *input_files[], int input_files_count, char *output_file, ui
     // Read all input files and calculate the total size
     for (i = 0; i < input_files_count; i++) 
     {
-        if (read_wav_file(input_files[i],&pcm_data_list[i], &pcm_data_sizes[i]) != 0)
+        if (read_wav_file(input_files[i],&pcm_data_list[i], &pcm_data_sizes[i], resample) != 0)
         {
 			return 1;
 		}
@@ -161,11 +194,21 @@ int main(int argc, char *argv[])
 	int input_files_count;
 	char **input_files;
 	char *output_file;
-	
+	unsigned char resample;
+    resample = 0;
+    
     if (argc < 3) {
         puts("Usage: pcmtop86 input1.pcm [input2.pcm ...] output.p86");
         return 1;
     }
+    
+	#ifdef RESAMPLER
+    if (strcmp(argv[1], "-r") == 0) {
+        resample = 1;
+        argc--;
+        argv++;
+    }
+    #endif
 
 	input_files_count = argc - 2;
 	input_files = argv + 1;
@@ -177,5 +220,5 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-    return create_p86(input_files, input_files_count, output_file, 0x11);
+    return create_p86(input_files, input_files_count, output_file, 0x11, resample);
 }

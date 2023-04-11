@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O2 -DRESAMPLER
 PREFIX ?= /usr
 TARGETS = pc8toppc pcmtop86 wav2pc8 wavtop86 wavtoppc
 
@@ -15,10 +15,10 @@ wav2pc8: wav2pc8.c
 	$(CC) $(CFLAGS) wav2pc8.c -o wav2pc8
 	
 wavtop86: wavtop86.c
-	$(CC) $(CFLAGS) wavtop86.c -o wavtop86
+	$(CC) $(CFLAGS) wavtop86.c -o wavtop86 -lspeexdsp
 	
 wavtoppc: wavtoppc.c
-	$(CC) $(CFLAGS) wavtoppc.c -o wavtoppc
+	$(CC) $(CFLAGS) wavtoppc.c -o wavtoppc -lspeexdsp
 
 install:
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/bin

@@ -2,6 +2,7 @@ PC-98 Music PMD conversion tools
 =================================
 
 Conversion tools for use with PMD on the NEC PC-9801/9821.
+There are 5 of them but most people want to only use WAV2P86 and WAV2PPC.
 
 - WAV2PC8
 
@@ -36,8 +37,12 @@ PPC Packer for WAV files.
 Input file must be Signed 16-bits Mono.
 Frequency, unlike P86, must be 16000hz. Because of this, make sure to have a higher quality input
 that you can convert to both separately P86 and PPC if needed.
-Use this with PMDB2/PMDPPZ
 
+
+If building both WAV2PPC and WAV2P86 with -DRESAMPLER (turned on by default in Makefile for Linux/BSD), 
+it can also use SpeexDSP to resample the wav files to 16000 for PPC or 16540 for P86.
+This greatly simplifies the process of converting files to PPC/P86 as you can just feed them
+higher quality sources.
 
 Samples
 =======

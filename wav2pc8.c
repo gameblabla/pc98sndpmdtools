@@ -39,18 +39,22 @@ static inline int16_t ymb_step(uint8_t step, int16_t* history, int16_t* step_siz
 	return newval;
 }
 
-void pcm2adpcm(uint8_t *outbuffer, int16_t *buffer,long len)
+void ymb_encode(int16_t *buffer,uint8_t *outbuffer, int32_t len)
 {
-	long i;
+	int32_t i;
 	int16_t step_size = 127;
 	int16_t history = 0;
 	uint8_t buf_sample = 0, nibble = 0;
-	unsigned int adpcm_sample;
+	uint32_t adpcm_sample;
+	int step;
+	
+	// Because buffer length is 16-bits, not 8-bits
+	len /= sizeof(int16_t);
 
 	for(i=0;i<len;i++)
 	{
 		// we remove a few bits of accuracy to reduce some noise.
-		int step = ((*buffer++) & -8) - history;
+		step = ((*buffer++) & -8) - history;
 		adpcm_sample = (abs(step)<<16) / (step_size<<14);
 		adpcm_sample = CLAMP(adpcm_sample, 0, 7);
 		if(step < 0)
@@ -169,14 +173,14 @@ int wav2adpcm(const char *infile, const char *outfile) {
     fclose(in);
 
     if(wavhdr.channels == 1) {
-        pcm2adpcm(adpcmbuf, pcmbuf, pcmsize);
+        ymb_encode(pcmbuf,  adpcmbuf, pcmsize);
     }
     else {
         /* For stereo we just deinterleave the input and store the
            left and right channel of the ADPCM data separately. */
         deinterleave(pcmbuf, pcmsize);
-        pcm2adpcm(adpcmbuf, pcmbuf, pcmsize / 2);
-        pcm2adpcm(adpcmbuf + adpcmsize / 2, pcmbuf + pcmsize / 4, pcmsize / 2);
+        ymb_encode(pcmbuf,  adpcmbuf, pcmsize / 2);
+        ymb_encode(pcmbuf + pcmsize / 4, adpcmbuf + adpcmsize / 2, pcmsize / 2);
     }
 
     wavhdr.datasize = adpcmsize;

@@ -199,6 +199,9 @@ int main(int argc, char *argv[])
     
     if (argc < 3) {
         puts("Usage: pcmtop86 input1.pcm [input2.pcm ...] output.p86");
+#ifdef RESAMPLER
+        puts("  -r: Force resampling input WAV files to 16540 Hz");
+#endif
         return 1;
     }
     

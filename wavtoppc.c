@@ -209,7 +209,9 @@ int main(int argc, char *argv[]) {
     
     if (argc < 3) {
         puts("Usage: wavtoppc [-r] input1.wav [input2.wav ...] output.ppc");
+#ifdef RESAMPLER
         puts("  -r: Force resampling input WAV files to 16000 Hz");
+#endif
         return 1;
     }
 

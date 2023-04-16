@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS = -Wall -O2 -DRESAMPLER
 PREFIX ?= /usr
-TARGETS = pc8toppc pcmtop86 wav2pc8 wavtop86 wavtoppc
+TARGETS = pc8toppc pcmtop86 wav2pc8 wavtop86 wavtoppc wavtopps
 
 all: $(TARGETS)
 
@@ -19,6 +19,9 @@ wavtop86: wavtop86.c
 	
 wavtoppc: wavtoppc.c
 	$(CC) $(CFLAGS) wavtoppc.c -o wavtoppc -lspeexdsp
+	
+wavtopps: wavtopps.c
+	$(CC) $(CFLAGS) wavtopps.c -o wavtopps -lspeexdsp
 
 install:
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/bin
@@ -30,6 +33,7 @@ uninstall:
 	-rm $(DESTDIR)$(PREFIX)/bin/wav2pc8
 	-rm $(DESTDIR)$(PREFIX)/bin/wavtop86
 	-rm $(DESTDIR)$(PREFIX)/bin/wavtoppc
+	-rm $(DESTDIR)$(PREFIX)/bin/wavtopps
 	
 clean:
 	rm -f $(TARGETS)

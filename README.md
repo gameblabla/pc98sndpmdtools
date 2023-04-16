@@ -48,6 +48,15 @@ Usage: wavtoppc [-r] input1.wav [input2.wav ...] output.ppc
 -r: Force resampling input WAV files to 16000 Hz
 ```
 
+- WAV2PPS
+
+PPS Packer for WAV files.
+Input file must be Signed 16-bits Mono.
+While the PPS format supports 16000hz (the max it can output),
+the tool assumes 8000hz due to size related reasons and adjusts the pitch so it sounds right.
+This is then resampled (except on DOS16) appropriately so not a whole lot to worry.
+
+
 Samples
 =======
 

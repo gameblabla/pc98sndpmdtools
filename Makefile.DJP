@@ -1,6 +1,6 @@
 CC = i386-pc-msdosdjgpp-gcc
 CFLAGS = -Wall -O2 -DRESAMPLER
-TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe WAVTOP86.exe WAVTOPPC.exe
+TARGETS = PC8TOPPC.exe PCMTOP86.exe WAV2PC8.exe WAVTOP86.exe WAVTOPPC.exe WAVTOPPS.exe
 
 all: $(TARGETS)
 
@@ -18,6 +18,9 @@ WAVTOP86.exe: wavtop86.c
 	
 WAVTOPPC.exe: wavtoppc.c
 	$(CC) $(CFLAGS) wavtoppc.c -o WAVTOPPC.exe -lspeexdsp
+	
+WAVTOPPS.exe: wavtopps.c
+	$(CC) $(CFLAGS) wavtopps.c -o WAVTOPPS.exe -lspeexdsp
 
 clean:
 	rm -f $(TARGETS)

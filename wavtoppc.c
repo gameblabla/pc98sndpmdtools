@@ -61,13 +61,13 @@ void ymb_encode(int16_t *buffer,uint8_t *outbuffer, int32_t len)
 	int16_t step_size = 127;
 	int16_t history = 0;
 	uint8_t buf_sample = 0, nibble = 0;
-	uint32_t adpcm_sample;
+	int32_t adpcm_sample;
 
 	for(i=0;i<len;i++)
 	{
 		// we remove a few bits of accuracy to reduce some noise.
 		int step = ((*buffer++) & -8) - history;
-		adpcm_sample = (abs(step)<<16) / (step_size<<14);
+		adpcm_sample = ((uint32_t)abs(step) << 16) / ((uint32_t)step_size << 14);
 		adpcm_sample = CLAMP(adpcm_sample, 0, 7);
 		if(step < 0)
 			adpcm_sample |= 8;

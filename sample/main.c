@@ -144,7 +144,7 @@ void pmd_play_FM_sound_effect(unsigned char sound_effect_index) {
 }
 
 
-// Starts at sound index 1, not 0
+// Starts at sound index 0
 void pmd_play_pcm_sound_effect(unsigned char sound_effect_index, unsigned short frequency, char pan, unsigned char volume)
 {
     union REGS inregs;

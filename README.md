@@ -74,7 +74,7 @@ Usage
 **PCM Playback**
 
 This is only if you want to use my example program with the converted files.
-Remember that it starts from index 1 (my tools also assume this).
+Remember that it starts from index 0.
 
 For -86 Soundboard (without extra ADPCM memory)
 ```
